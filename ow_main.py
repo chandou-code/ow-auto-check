@@ -6,55 +6,46 @@ import pyperclip
 import keyboard
 import time
 import os
+import subprocess
+import sys
 
 BASE_DIR = r"C:\Users\10717\PycharmProjects\ow一键测组队"
 PICTURE_DIR = os.path.join(BASE_DIR, "picture")
 
-# 获取屏幕分辨率
-SCREEN_WIDTH, SCREEN_HEIGHT = pyautogui.size()
-print(f"屏幕分辨率: {SCREEN_WIDTH} x {SCREEN_HEIGHT}")
-
-# ==================== 比例配置（0.0-1.0）====================
-# 坐标格式: (x_ratio, y_ratio) 表示相对于屏幕宽高的比例
-
-# F12的5组点击（比例）
-F12_CLICK_RATIOS = [
-    (719 / SCREEN_WIDTH, 915 / SCREEN_HEIGHT),        # 第1组
-    (719 / SCREEN_WIDTH, 1000 / SCREEN_HEIGHT),       # 第2组
-    (719 / SCREEN_WIDTH, 1095 / SCREEN_HEIGHT),       # 第3组
-    (719 / SCREEN_WIDTH, 1185 / SCREEN_HEIGHT),       # 第4组
-    (719 / SCREEN_WIDTH, 1266 / SCREEN_HEIGHT),       # 第5组
+# ==================== 配置 ====================
+F12_CLICK_POSITIONS = [
+    (719, 915),
+    (719, 1000),
+    (719, 1095, 719 + 117, 769 + 10 - 5),
+    (719, 1185, 719 + 117, 1185 - 319-7),
+    (719, 1266, 719 + 117, 1266 - 319),
 ]
+# F12_CLICK_POSITIONS = [
+#     (719, 915),
+#     (719, 1000),
+#     (719, 1095, 719 + 117, 769 + 10 - 5),
+#     (719, 1185, 719 + 117, 1185 - 319 - 5),
+#     (719, 1266, 719 + 117, 1266 - 319),
+# ]
+FINAL_CLICK = (2031, 624)
 
-# F12第3-5组的第二个点击（比例）
-F12_SECOND_CLICK_RATIOS = [
-    None,                                               # 第1组用差值计算
-    None,                                               # 第2组用差值计算
-    ((719 + 117) / SCREEN_WIDTH, (769 + 10 - 5) / SCREEN_HEIGHT),  # 第3组
-    ((719 + 117) / SCREEN_WIDTH, (1185 - 319 - 5) / SCREEN_HEIGHT), # 第4组
-    ((719 + 117) / SCREEN_WIDTH, (1266 - 319) / SCREEN_HEIGHT),       # 第5组
-]
+DX = 77
+DY = 225
 
-# 最终点击（比例）
-FINAL_CLICK_RATIO = (2031 / SCREEN_WIDTH, 624 / SCREEN_HEIGHT)
-
-# 差值（用于计算第二个点击位置）
-DX_RATIO = 77 / SCREEN_WIDTH
-DY_RATIO = 225 / SCREEN_HEIGHT
-
-# 检测区域（比例）
-DETECT_RATIO = {
-    "left": 60 / SCREEN_WIDTH,
-    "top": 1112 / SCREEN_HEIGHT,
-    "width": 580 / SCREEN_WIDTH,
-    "height": 368 / SCREEN_HEIGHT,
+# ==================== ow_count 配置 ====================
+COUNT_REGION = {
+    "left": 60,
+    "top": 1112,
+    "width": 580,
+    "height": 368
 }
 
-# 模板配置
 COUNT_TEMPLATE = "b7dcf52163eb26cf4c1a157c40f9ca48.png"
 COUNT_THRESHOLD = 0.9
 
-# 延迟配置
+MESSAGE = "组排真牛，对面是{}排"
+
+# ==================== 延迟配置 ====================
 DELAYS = {
     'tab_press': 0.05,
     'middle_click': 0.05,
@@ -68,51 +59,31 @@ DELAYS = {
 }
 
 
-def ratio_to_pixel(ratio_x, ratio_y):
-    """比例转像素"""
-    x = int(ratio_x * SCREEN_WIDTH)
-    y = int(ratio_y * SCREEN_HEIGHT)
-    return x, y
-
-
-def ratio_to_region(ratio_dict):
-    """比例转mss区域"""
-    return {
-        "left": int(ratio_dict["left"] * SCREEN_WIDTH),
-        "top": int(ratio_dict["top"] * SCREEN_HEIGHT),
-        "width": int(ratio_dict["width"] * SCREEN_WIDTH),
-        "height": int(ratio_dict["height"] * SCREEN_HEIGHT),
-    }
-
-
 def execute_f12_sequence():
     """执行F12的5组点击"""
     print("\n" + "=" * 50)
     print("[执行] F12的5组点击")
     print("=" * 50)
 
-    for i in range(len(F12_CLICK_RATIOS)):
-        print(f"--- 第{i+1}组 ---")
+    for i, pos in enumerate(F12_CLICK_POSITIONS, 1):
+        print(f"--- 第{i}组 ---")
 
-        # 第一个点击
-        x1, y1 = ratio_to_pixel(F12_CLICK_RATIOS[i][0], F12_CLICK_RATIOS[i][1])
-        print(f"右键: ({x1}, {y1}) [比例: {F12_CLICK_RATIOS[i]}]")
+        if len(pos) == 4:
+            x1, y1, x2, y2 = pos
+        else:
+            x1, y1 = pos
+            x2, y2 = x1 + DX, y1 + DY
+
+        print(f"右键: ({x1}, {y1})")
         pyautogui.click(x1, y1, button='right')
         time.sleep(DELAYS['after_right_click'])
 
-        # 第二个点击
-        if F12_SECOND_CLICK_RATIOS[i] is not None:
-            x2, y2 = ratio_to_pixel(F12_SECOND_CLICK_RATIOS[i][0], F12_SECOND_CLICK_RATIOS[i][1])
-        else:
-            x2, y2 = x1 + int(DX_RATIO * SCREEN_WIDTH), y1 + int(DY_RATIO * SCREEN_HEIGHT)
         print(f"左键1: ({x2}, {y2})")
         pyautogui.click(x2, y2)
         time.sleep(DELAYS['after_left_click'])
 
-        # 最终点击
-        fx, fy = ratio_to_pixel(FINAL_CLICK_RATIO[0], FINAL_CLICK_RATIO[1])
-        print(f"左键2: ({fx}, {fy})")
-        pyautogui.click(fx, fy)
+        print(f"左键2: {FINAL_CLICK}")
+        pyautogui.click(FINAL_CLICK[0], FINAL_CLICK[1])
         time.sleep(DELAYS['after_final_click'])
 
     print("=" * 50)
@@ -142,29 +113,14 @@ def count_and_send():
 
     print(f"模板尺寸: {template.shape}")
 
-    # 使用比例转换区域
-    detect_region = ratio_to_region(DETECT_RATIO)
-    print(f"检测区域(像素): {detect_region}")
-    print(f"检测区域(比例): {DETECT_RATIO}")
-
     with mss.mss() as sct:
-        screenshot = np.array(sct.grab(detect_region))
+        screenshot = np.array(sct.grab(COUNT_REGION))
         screenshot_bgr = cv2.cvtColor(screenshot, cv2.COLOR_BGRA2BGR)
 
-    # timestamp = time.strftime("%Y%m%d_%H%M%S")
-    # screenshot_path = os.path.join(BASE_DIR, f"screenshot_{timestamp}.png")
-    # cv2.imwrite(screenshot_path, screenshot_bgr)
-    # print(f"截图已保存: {screenshot_path}")
-
-    # 删除旧的截图文件（保留最新生成的）
-    # try:
-    #     for f in os.listdir(BASE_DIR):
-    #         if f.startswith("screenshot_") and f.endswith(".png") and f != os.path.basename(screenshot_path):
-    #             old_path = os.path.join(BASE_DIR, f)
-    #             os.remove(old_path)
-    #             print(f"已删除旧截图: {f}")
-    # except Exception as e:
-    #     print(f"清理旧截图时出错: {e}")
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    screenshot_path = os.path.join(BASE_DIR, f"screenshot_{timestamp}.png")
+    cv2.imwrite(screenshot_path, screenshot_bgr)
+    print(f"截图已保存: {screenshot_path}")
 
     # 模板匹配
     result = cv2.matchTemplate(screenshot_bgr, template, cv2.TM_CCOEFF_NORMED)
@@ -203,10 +159,11 @@ def count_and_send():
 
     # 发送消息
     print("[3] 发送消息...")
+    # 数字转中文: 0->零(特殊消息), 1->两, 2->两, 3->三, 4->四, 5->五
     if count == 0:
         message = "你跑不过我"
     else:
-        cn_map = {1: "两", 2: "二", 3: "三", 4: "四", 5: "五"}
+        cn_map = {1: "两", 2: "两", 3: "三", 4: "四", 5: "五"}
         count_cn = cn_map.get(count, str(count))
         message = f"组排真牛，对面是{count_cn}排"
 
@@ -262,12 +219,13 @@ def full_sequence():
 
 def main():
     print("=" * 50)
-    print("OW一键组队程序（比例版本）已启动")
-    print(f"当前屏幕分辨率: {SCREEN_WIDTH} x {SCREEN_HEIGHT}")
+    print("OW一键组队程序已启动")
     print("按F12执行完整一键操作")
+    print("按F7测试模式（只打印不执行）")
     print("按Ctrl+C退出")
     print("=" * 50)
 
+    keyboard.on_press_key('f7', lambda _: print("[测试] 完整流程: Tab+中键 -> F12(5组) -> 计数发送"))
     keyboard.on_press_key('f12', lambda _: full_sequence())
 
     try:
