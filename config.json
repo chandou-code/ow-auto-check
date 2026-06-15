@@ -1,0 +1,26 @@
+{
+    "f12_click_positions": [
+        [750, 915],
+        [750, 1000],
+        [750, 1095],
+        [750, 1185],
+        [750, 1266]
+    ],
+    "final_click": [2031, 624],
+    "join_search_region": {
+        "top": 285,
+        "left": 330,
+        "width": 1274,
+        "height": 1019
+    },
+    "join_template": "join.png",
+    "join_threshold": 0.8,
+    "delays": {
+        "tab_press": 0.025,
+        "middle_click": 0.025,
+        "tab_release": 0.075,
+        "after_right_click": 0.125,
+        "after_left_click": 0.075,
+        "after_final_click": 0.075
+    }
+}
