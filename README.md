@@ -24,7 +24,7 @@
 ├── config.json              # 配置文件（坐标、延迟等）
 ├── ow_main.log              # 运行日志（自动生成）
 ├── picture/                 # 图片资源目录
-│   ├── join.png             # [必需] 加入按钮模板
+│   ├── join.png             #  加入按钮模板
 │   └── sign/                # 角色图标目录
 │       └── b7dcf52163eb26cf4c1a157c40f9ca48.png  
 └── README.md                # 项目说明
