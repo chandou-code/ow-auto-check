@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 > nul
-set "PYTHON_PROJECT=C:\Users\10717\PycharmProjects\ow一键测组队"
+set "PYTHON_PROJECT=C:\Users\10717\PycharmProjects\ow测组队v2"
 
 REM 检查虚拟环境
 if not exist "%PYTHON_PROJECT%\.venv\Scripts\activate.bat" (
@@ -22,7 +22,7 @@ if errorlevel 1 (
 REM 运行脚本
 echo 正在运行脚本...
 cd /d "%PYTHON_PROJECT%"
-python ow_main_ratio.py
+python main.py
 
 REM 保持窗口
 echo 执行完成
