@@ -120,5 +120,24 @@ def find_all_matches(screenshot, template, threshold=0.9):
     return len(keep)
 
 
-# 导入os用于load_template
+def capture_screen():
+    """截取全屏，返回BGR格式的numpy数组"""
+    with mss.mss() as sct:
+        sct.shot(output="screenshot_temp.png")
+        img = cv2.imread("screenshot_temp.png")
+        os.remove("screenshot_temp.png")
+        return img
+
+
+def crop_region(image, x1, y1, x2, y2):
+    """裁剪指定区域"""
+    return image[y1:y2, x1:x2]
+
+
+def save_temp_image(img, filename):
+    """保存临时图片用于识别"""
+    cv2.imwrite(filename, img)
+
+
+# 导入os用于load_template和save_temp_image
 import os

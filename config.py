@@ -19,6 +19,11 @@ else:
 PICTURE_DIR = os.path.join(RESOURCE_DIR, "picture")
 LOG_PATH = os.path.join(BASE_DIR, "ow_main.log")
 
+# AI识别相关路径
+OCR_DIR = os.path.join(BASE_DIR, "OCR")
+TRAN_DIR = os.path.join(BASE_DIR, "Tran")
+MODEL_PATH = os.path.join(TRAN_DIR, "hero_classifier.pkl")
+
 # 配置文件路径
 CONFIG_PATH = os.path.join(BASE_DIR, "config.json")
 CONFIG2_PATH = os.path.join(BASE_DIR, "config2.json")
@@ -42,7 +47,9 @@ def check_admin():
     """检测是否管理员模式"""
     try:
         import ctypes
-        is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
+        is_admin = ctypes.windll.shell32.IsUserAnAdmin()
+        # 确保返回的是Python原生bool类型
+        is_admin = bool(is_admin)
         log_message(f"管理员模式: {is_admin}")
         if not is_admin:
             log_message("=" * 50)
@@ -89,6 +96,28 @@ def load_config2():
     else:
         log_message(f"相对坐标配置文件不存在，将在学习模式中创建")
         return {"relative_clicks": []}
+
+
+def load_ai_model():
+    """
+    加载AI识别模型
+    返回: (classifier, labels) 或 (None, None) 如果加载失败
+    """
+    try:
+        from train_hero_model import HeroClassifier
+        classifier = HeroClassifier()
+        if os.path.exists(MODEL_PATH):
+            classifier.load(MODEL_PATH)
+            # 确保labels是列表形式以避免numpy问题
+            labels = list(classifier.labels) if hasattr(classifier.labels, '__len__') else [classifier.labels]
+            log_message(f"AI模型加载成功，共 {len(labels)} 个样本")
+            return classifier, labels
+        else:
+            log_message(f"[警告] AI模型不存在: {MODEL_PATH}")
+            return None, None
+    except Exception as e:
+        log_message(f"[警告] AI模型加载失败: {e}")
+        return None, None
 
 
 def save_config2(config2):

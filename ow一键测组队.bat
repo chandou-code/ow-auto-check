@@ -22,7 +22,7 @@ if errorlevel 1 (
 REM 运行脚本
 echo 正在运行脚本...
 cd /d "%PYTHON_PROJECT%"
-python main.py
+python ow_main.py
 
 REM 保持窗口
 echo 执行完成
